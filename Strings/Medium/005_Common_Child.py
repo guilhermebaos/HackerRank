@@ -1,4 +1,5 @@
 # General Case: 'https://en.wikipedia.org/wiki/Longest_common_subsequence_problem'
+from time import asctime
 
 
 def commonChild(s1, s2):
@@ -18,22 +19,35 @@ def commonChild(s1, s2):
     ls1 = len(new_s1)
     ls2 = len(new_s2)
 
-    print(ls1, ls2)
+    print(asctime())
+    print(ls1, ls2, '\n')
 
     table = []
     for row in range(0, ls1 + 1):
         table += [[]]
-        for square in range(0, ls2 + 1):
+        if row == 0:
+            for square in range(0, ls2 + 1):
+                table[-1] += [0]
+        else:
             table[-1] += [0]
+
+    print(asctime())
+    print('Empty Table!', '\n')
 
     for pos1, letter1 in enumerate(new_s1):
         row = table[pos1 + 1]
         for pos2, letter2 in enumerate(new_s2):
             if letter1 == letter2:
-                row[pos2 + 1] = table[pos1][pos2] + 1
+                row += [table[pos1][pos2] + 1]
             else:
-                row[pos2 + 1] = max(table[pos1 + 1][pos2], table[pos1][pos2 + 1])
+                p1 = table[pos1 + 1][pos2]
+                p2 = table[pos1][pos2 + 1]
+                if p1 > p2:
+                    row += [p1]
+                else:
+                    row += [p2]
 
+    print(asctime())
     return table[-1][-1]
 
 
