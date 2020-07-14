@@ -47,6 +47,9 @@ def commonChild(s1, s2):
                 else:
                     row += [p2]
 
+    for row in table:
+        print(row)
+
     print(asctime())
     return table[-1][-1]
 
@@ -56,4 +59,4 @@ string_2 = 'WZFPTGLCXKNHAKSFEIXYOHTDCCSDAKYASOBHHDTBEZXRKGKOJOLMEGTPSWQNRODAHQOY
 
 small_1 = 'WEWOUCUIDGCGTRMEZEPXZFEJWISRSBBSYXAYDFEJJDLEBVHHKS'
 small_2 = 'FDAGCXGKCTKWNECHMRXZWMLRYUCOCZHJRRJBOAJOQJZZVUYXIC'
-print(commonChild(string_1, string_2))
+print(commonChild(small_1, small_2))

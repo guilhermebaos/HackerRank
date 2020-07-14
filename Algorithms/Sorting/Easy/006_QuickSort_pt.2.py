@@ -13,15 +13,6 @@ def quickSort(arr):
         left = quickSort(left)
     if len(right) > 1:
         right = quickSort(right)
-
-    for num in left:
-        print(num, end=' ')
-    for num in equal:
-        print(num, end=' ')
-    for num in right:
-        print(num, end=' ')
-
-    print('')
     return left + equal + right
 
 
