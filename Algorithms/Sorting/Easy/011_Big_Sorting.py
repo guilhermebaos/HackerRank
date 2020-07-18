@@ -1,7 +1,7 @@
-def bigSorting(unsorted): return bigQuickSortStrings(unsorted)
+def bigSorting(unsorted): return quickSortBigStrings(unsorted)
 
 
-def bigQuickSortStrings(arr):
+def quickSortBigStrings(arr):
     if len(arr[:2]) <= 1:
         return arr
 
@@ -25,6 +25,6 @@ def bigQuickSortStrings(arr):
             else:
                 equal += [num]
 
-    left = bigQuickSortStrings(left)
-    right = bigQuickSortStrings(right)
+    left = quickSortBigStrings(left)
+    right = quickSortBigStrings(right)
     return left + equal + right

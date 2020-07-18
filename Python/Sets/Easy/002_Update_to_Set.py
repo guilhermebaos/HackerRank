@@ -1,8 +1,8 @@
 len_A = int(input())
 A = set(input().split())
 
-N = int(input())
-for _ in range(N):
+n = int(input())
+for _ in range(n):
     command = input().split()[0]
     B = set(input().split())
     if command == 'update':
