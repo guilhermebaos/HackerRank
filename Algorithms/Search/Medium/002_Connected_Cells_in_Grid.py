@@ -1,3 +1,5 @@
+# https://www.hackerrank.com/challenges/connected-cell-in-a-grid/problem
+
 def connectedCell(matrix):
     region_list = []
     len_row = len(matrix[0])

@@ -1,3 +1,5 @@
+# https://www.hackerrank.com/challenges/knightl-on-chessboard/problem
+
 def minimumPath(move, size):
     a = [move[0], -move[0]]
     b = [move[1], -move[1]]
@@ -61,7 +63,7 @@ def knightlOnAChessboard(n):
     return org_results
 
 
-board = 5
+board = 45
 solution = knightlOnAChessboard(board)
 
 print('\n'.join([' '.join(map(str, x)) for x in solution]))
