@@ -1,6 +1,7 @@
 n = int(input())
 array = list(map(int, input().split()))
 
+
 def quickSort(arr, low, high):
     if low < high:
         pivot_index = partition(arr, low, high)
@@ -13,7 +14,6 @@ def quickSort(arr, low, high):
 def partition(arr, low, high):
     pivot = arr[high]
     i = low
-    j = low
     for j in range(low, high):
         if arr[j] < pivot:
             temp = arr[j]
