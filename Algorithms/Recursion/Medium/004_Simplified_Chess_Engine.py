@@ -14,51 +14,19 @@ def letters_to_numbers(letter):
 
 # POSSIBLE MOVES:
 def horizontal():
-    x = -3
-
-    while x <= 3:
-        yield [x, 0]
-        x += 1
-
-        if x == 0:
-            x += 1
+    return [[-3, 0], [-2, 0], [-1, 0], [1, 0], [2, 0], [3, 0]]
 
 
 def vertical():
-    y = -3
-
-    while y <= 3:
-        yield [0, y]
-        y += 1
-
-        if y == 0:
-            y += 1
+    return [[0, -3], [0, -2], [0, -1], [0, 1], [0, 2], [0, 3]]
 
 
 def diagonal():
-    x = -3
-    y = -3
-
-    while x <= 3:
-        yield [x, y]
-        yield [x, y * -1]
-        x += 1
-        y += 1
-
-        if x == 0:
-            x += 1
-            y += 1
+    return [[-3, -3], [-2, -2], [-1, -1], [1, 1], [2, 2], [3, 3], [-3, 3], [-2, 2], [-1, 1], [1, -1], [2, -2], [3, -3]]
 
 
 def horse():
-    move = [1, 2]
-
-    for inverted in [False, True]:
-        if inverted:
-            move = [move[1], move[0]]
-        for x in [-1, 1]:
-            for y in [-1, 1]:
-                yield [move[0] * x, move[1] * y]
+    return [[1, 2], [-1, 2], [1, -2], [-1, -2], [2, 1], [2, -1], [-2, 1], [-2, -1]]
 
 
 # REPRESENTATION OF A CHESS PIECE
@@ -78,41 +46,149 @@ class Piece:
 
         return new_coord
 
-    # All the possible moves it could make in a 4 x 4 board
-    def move_generator(self):
-        if self.piece == 'R':
-            h = horizontal()
-            while True:
-                yield next(h)
 
-        elif self.piece == 'B':
-            d = diagonal()
-            while True:
-                yield next(d)
+# Check is a move type is possible
+def check_move(current_piece, other_pieces, move_type):
+    possible_moves = []
 
-        elif self.piece == 'N':
-            h = horse()
-            while True:
-                yield next(h)
+    # Is a piece wants to move horizontally, check the x values for pieces on the same row
+    if move_type == 'horizontal':
+        min_x, max_x = None, None
+        for different_piece in other_pieces:
 
-        elif self.piece == 'Q':
-            h = horizontal()
-            while True:
-                try:
-                    yield next(h)
-                except StopIteration:
-                    break
+            # x-coordinates of the pieces to the left and right of this one
+            if different_piece.coord[1] == current_piece.coord[1]:
+                if different_piece.coord[0] < current_piece.coord[0]:
+                    if (min_x and different_piece.coord[0] > min_x) or (not min_x):
+                        min_x = different_piece.coord[0]
 
-            v = vertical()
-            while True:
-                try:
-                    yield next(v)
-                except StopIteration:
-                    break
+                else:
+                    if (max_x and different_piece.coord[0] < max_x) or (not max_x):
+                        max_x = different_piece.coord[0]
 
-            d = diagonal()
-            while True:
-                yield next(d)
+        # If a horizontal move doesn't jump over a piece, it's valid
+        for move in horizontal():
+            possible_moves += [move]
+
+            # Working with the maximum values for new_coords
+            try:
+                new_coords = current_piece + move
+
+                if min_x and min_x > new_coords[0]:
+                    possible_moves.remove(move)
+                if max_x and max_x < new_coords[0]:
+                    possible_moves.remove(move)
+            except ValueError:
+                possible_moves.remove(move)
+
+    # Check what vertical moves are possible
+    elif move_type == 'vertical':
+        min_y, max_y = None, None
+        for different_piece in other_pieces:
+
+            # y-coordinates of the pieces to the bottom and top of this one (they have to be on the same col -> same x)
+            if different_piece.coord[0] == current_piece.coord[0]:
+                if different_piece.coord[1] < current_piece.coord[1]:
+                    if (min_y and different_piece.coord[1] > min_y) or (not min_y):
+                        min_y = different_piece.coord[1]
+
+                else:
+                    if (max_y and different_piece.coord[1] < max_y) or (not max_y):
+                        max_y = different_piece.coord[1]
+
+        # If a vertical move doesn't jump over a piece, it's valid
+        for move in vertical():
+            possible_moves += [move]
+
+            # Working with the maximum values for new_coords
+            try:
+                new_coords = current_piece + move
+
+                if min_y and min_y > new_coords[1]:
+                    possible_moves.remove(move)
+                if max_y and max_y < new_coords[1]:
+                    possible_moves.remove(move)
+            except ValueError:
+                possible_moves.remove(move)
+
+    # Check what diagonal moves are possible
+    elif move_type == 'diagonal':
+        positive_x_min_y, positive_x_max_y = None, None
+        negative_x_min_y, negative_x_max_y = None, None
+
+        for different_piece in other_pieces:
+            delta_coord = [different_piece.coord[0] - current_piece.coord[0],
+                           different_piece.coord[1] - current_piece.coord[1]]
+
+            # Check if different_piece is in the same diagonal as current_piece
+            if abs(delta_coord[0]) != abs(delta_coord[1]):
+                continue
+
+            # If they are in the same diagonal, identify the quadrant which they are in
+            if delta_coord[0] > 0:
+                if delta_coord[1] < 0:
+                    if (positive_x_min_y and delta_coord[1] > positive_x_min_y) or (not positive_x_min_y):
+                        positive_x_min_y = delta_coord[1]
+
+                else:
+                    if (positive_x_max_y and delta_coord[1] < positive_x_max_y) or (not positive_x_max_y):
+                        positive_x_max_y = delta_coord[1]
+
+            else:
+                if delta_coord[1] < 0:
+                    if (negative_x_min_y and delta_coord[1] > negative_x_min_y) or (not negative_x_min_y):
+                        negative_x_min_y = delta_coord[1]
+                else:
+                    if (negative_x_max_y and delta_coord[1] < negative_x_max_y) or (not negative_x_max_y):
+                        negative_x_max_y = delta_coord[1]
+
+
+        # If a diagonal move doesn't jump over a piece, it's valid
+        for move in diagonal():
+            possible_moves += [move]
+
+            # Working with the maximum values for move
+            try:
+                new_coords = current_piece + move
+
+                if move[0] > 0:
+                    if positive_x_min_y and positive_x_min_y > move[1]:
+                        possible_moves.remove(move)
+                    elif positive_x_max_y and positive_x_max_y < move[1]:
+                        possible_moves.remove(move)
+
+                else:
+                    if negative_x_min_y and negative_x_min_y > move[1]:
+                        possible_moves.remove(move)
+                    elif negative_x_max_y and negative_x_max_y < move[1]:
+                        possible_moves.remove(move)
+
+            except ValueError:
+                possible_moves.remove(move)
+
+    return possible_moves
+
+
+# Creates a generator with all possible moves a piece can make, given a certain board
+def move_generator(current_piece, same_color, other_color):
+    possible_moves = []
+    if current_piece.piece == 'R':
+        possible_moves += check_move(current_piece, same_color + other_color, 'horizontal')
+        possible_moves += check_move(current_piece, same_color + other_color, 'vertical')
+
+    elif current_piece.piece == 'B':
+        possible_moves += check_move(current_piece, same_color + other_color, 'diagonal')
+
+    elif current_piece.piece == 'N':
+        possible_moves += horse()
+
+    elif current_piece.piece == 'Q':
+        possible_moves += check_move(current_piece, same_color + other_color, 'horizontal')
+        possible_moves += check_move(current_piece, same_color + other_color, 'vertical')
+        possible_moves += check_move(current_piece, same_color + other_color, 'diagonal')
+
+    for m in possible_moves:
+        yield m
 
 
 # Detect Collisions between pieces
@@ -132,18 +208,20 @@ def detect_collisions(new_coord, same_color, other_color):
 
 # See if white can win in less than m moves
 def can_white_win(moving_now, moving_next, moves, current_move=1):
+    # If we're over the move limit, white can't win
     if current_move > moves:
         return False
 
+    # See whose turn it is
     if current_move % 2 == 1:
         moving_color = 'White'
     else:
         moving_color = 'Black'
 
-    # For every piece of the color that's moving now, try every move possible
+    # For every piece of the color that's moving now, try every move possible that it can make
     results = []
     for index_piece, current_piece in enumerate(moving_now):
-        move_gen = current_piece.move_generator()
+        move_gen = move_generator(current_piece, moving_now[:index_piece] + moving_now[index_piece + 1:], moving_next)
 
         # Try every move of the selected piece
         while True:
@@ -168,6 +246,14 @@ def can_white_win(moving_now, moving_next, moves, current_move=1):
 
                 results += [can_white_win(new_next, new_now, moves, current_move + 1)]
 
+                # If white has one way to win, return True
+                if moving_color == 'White' and results[-1]:
+                    return True
+
+                # If black has one way to win against the previous white move, white loses
+                if moving_color == 'Black' and not results[-1]:
+                    return False
+
             except StopIteration:
                 break
             except RuntimeError:
@@ -177,19 +263,13 @@ def can_white_win(moving_now, moving_next, moves, current_move=1):
 
     # Check the results of the following moves
 
-    # For white to win, it has to win against every black move
+    # If white had no way to win, white loses
     if moving_color == 'White':
-        for r in results:
-            if not r:
-                return False
-        return True
-
-    # For black to lose, there has to be one way for white to win after this specific move
-    else:
-        for r in results:
-            if r:
-                return True
         return False
+
+    # If black had no way to win, white wins
+    else:
+        return True
 
 
 # Main Function
@@ -208,16 +288,16 @@ def simplifiedChessEngine(whites, blacks, moves):
         return 'NO'
 
 
-print(simplifiedChessEngine(
-    [['N', 'C', '2'], ['N', 'A', '1'], ['R', 'D', '4'], ['R', 'B', '4'], ['Q', 'B', '2']],
-    [['R', 'A', '2'], ['Q', 'C', '1']],
-    1
-))
 print('\n\n')
 print(simplifiedChessEngine(
     [['Q', 'C', '1']],
     [['Q', 'B', '3']],
     4
+))
+print(simplifiedChessEngine(
+    [['N', 'C', '2'], ['N', 'A', '1'], ['R', 'D', '4'], ['R', 'B', '4'], ['Q', 'B', '2']],
+    [['R', 'A', '2'], ['Q', 'C', '1']],
+    1
 ))
 print('\n\n')
 print(simplifiedChessEngine(
