@@ -208,6 +208,7 @@ def detect_collisions(new_coord, same_color, other_color):
 
 # See if white can win in less than m moves
 def can_white_win(moving_now, moving_next, moves, current_move=1):
+
     # If we're over the move limit, white can't win
     if current_move > moves:
         return False
@@ -218,20 +219,24 @@ def can_white_win(moving_now, moving_next, moves, current_move=1):
     else:
         moving_color = 'Black'
 
-    # For every piece of the color that's moving now, try every move possible that it can make
+    # For every piece of the color that's moving now, try every possible move that it can make, using BFS and DFS
     results = []
+    check_next = []
     for index_piece, current_piece in enumerate(moving_now):
         move_gen = move_generator(current_piece, moving_now[:index_piece] + moving_now[index_piece + 1:], moving_next)
 
         # Try every move of the selected piece
         while True:
             try:
+                # Execute every possible move
                 next_move = next(move_gen)
                 new_coord = current_piece + next_move
 
+                # See if the piece collided with another one
                 collision = detect_collisions(new_coord, moving_now[:index_piece] + moving_now[index_piece + 1:],
                                               moving_next)
 
+                # Update pieces based on the collision
                 new_next = moving_next[:]
                 if collision:
                     new_next.remove(collision)
@@ -241,18 +246,11 @@ def can_white_win(moving_now, moving_next, moves, current_move=1):
                         else:
                             return False
 
+                # Save the current state in order to evaluate it next
                 new_now = moving_now[:]
                 new_now[index_piece] = Piece(current_piece.color, current_piece.piece, new_coord)
 
-                results += [can_white_win(new_next, new_now, moves, current_move + 1)]
-
-                # If white has one way to win, return True
-                if moving_color == 'White' and results[-1]:
-                    return True
-
-                # If black has one way to win against the previous white move, white loses
-                if moving_color == 'Black' and not results[-1]:
-                    return False
+                check_next += [[new_next, new_now, moves, current_move + 1]]
 
             except StopIteration:
                 break
@@ -262,6 +260,16 @@ def can_white_win(moving_now, moving_next, moves, current_move=1):
                 pass
 
     # Check the results of the following moves
+    for state in check_next:
+        results += [can_white_win(state[0], state[1], state[2], state[3])]
+
+        # If white has one way to win, return True
+        if moving_color == 'White' and results[-1]:
+            return True
+
+        # If black has one way to win against the previous white move, white loses
+        if moving_color == 'Black' and not results[-1]:
+            return False
 
     # If white had no way to win, white loses
     if moving_color == 'White':
@@ -287,7 +295,7 @@ def simplifiedChessEngine(whites, blacks, moves):
     else:
         return 'NO'
 
-
+'''
 print('\n\n')
 print(simplifiedChessEngine(
     [['Q', 'C', '1']],
@@ -304,4 +312,11 @@ print(simplifiedChessEngine(
     [['N', 'C', '2'], ['R', 'A', '1'], ['Q', 'D', '4']],
     [['R', 'A', '4'], ['R', 'B', '4'], ['N', 'A', '3'], ['N', 'C', '3'], ['Q', 'A', '2']],
     6
+))'''
+print('\n\n')
+print(simplifiedChessEngine(
+    [['N', 'C', '4'], ['N', 'D', '4'], ['R', 'A', '4'], ['R', 'B', '2'], ['Q', 'A', '3']],
+    [['N', 'D', '3'], ['R', 'A', '2'], ['Q', 'D', '1']],
+    5
 ))
+
