@@ -12,7 +12,7 @@ def letters_to_numbers(letter):
         return 4
 
 
-# POSSIBLE MOVES:
+# POSSIBLE MOVES
 def horizontal():
     return [[-3, 0], [-2, 0], [-1, 0], [1, 0], [2, 0], [3, 0]]
 
@@ -45,6 +45,30 @@ class Piece:
             raise ValueError('Piece out of the Board!')
 
         return new_coord
+
+    # Checking if two pieces are the same, for
+    def __eq__(self, other):
+        for attr in ('color', 'piece', 'coord'):
+            if getattr(self, attr) != getattr(other, attr):
+                return False
+        return True
+
+    # Debugging
+    def __str__(self):
+        return f'{self.color} piece {self.piece} is in {self.coord}'
+
+
+# Check if we're repeating a board
+all_boards = []
+
+
+def check_board(all_pieces):
+    global all_boards
+
+    for board in all_boards:
+        if all_pieces == board:
+            return False
+    return True
 
 
 # Check is a move type is possible
@@ -142,7 +166,6 @@ def check_move(current_piece, other_pieces, move_type):
                     if (negative_x_max_y and delta_coord[1] < negative_x_max_y) or (not negative_x_max_y):
                         negative_x_max_y = delta_coord[1]
 
-
         # If a diagonal move doesn't jump over a piece, it's valid
         for move in diagonal():
             possible_moves += [move]
@@ -166,6 +189,14 @@ def check_move(current_piece, other_pieces, move_type):
             except ValueError:
                 possible_moves.remove(move)
 
+    elif move_type == 'horse':
+        for move in horse():
+            try:
+                new_coords = current_piece + move
+                possible_moves += [move]
+            except ValueError:
+                pass
+
     return possible_moves
 
 
@@ -180,13 +211,14 @@ def move_generator(current_piece, same_color, other_color):
         possible_moves += check_move(current_piece, same_color + other_color, 'diagonal')
 
     elif current_piece.piece == 'N':
-        possible_moves += horse()
+        possible_moves += check_move(current_piece, same_color + other_color, 'horse')
 
     elif current_piece.piece == 'Q':
         possible_moves += check_move(current_piece, same_color + other_color, 'horizontal')
         possible_moves += check_move(current_piece, same_color + other_color, 'vertical')
         possible_moves += check_move(current_piece, same_color + other_color, 'diagonal')
 
+    print(possible_moves)
     for m in possible_moves:
         yield m
 
@@ -206,24 +238,39 @@ def detect_collisions(new_coord, same_color, other_color):
     return None
 
 
+# Return all the white and black pieces, in this order
+def whites_first(moving_now, moving_next, moving_color):
+    if moving_color == 'White':
+        return moving_now + moving_next
+    return moving_next + moving_now
+
+
 # See if white can win in less than m moves
 def can_white_win(moving_now, moving_next, moves, current_move=1):
-
-    # If we're over the move limit, white can't win
+    # If we're over the move limit, white didn't win
     if current_move > moves:
         return False
 
     # See whose turn it is
-    if current_move % 2 == 1:
-        moving_color = 'White'
-    else:
-        moving_color = 'Black'
+    moving_color = 'White' if current_move % 2 == 1 else 'Black'
+
+    # Add board to collection of all boards
+    global all_boards
+    all_boards += [whites_first(moving_now, moving_next, moving_color)]
+
+    print(f'\n\n\n\nCurrent Move: {current_move}\n\n\n\n')
 
     # For every piece of the color that's moving now, try every possible move that it can make, using BFS and DFS
     results = []
     check_next = []
     for index_piece, current_piece in enumerate(moving_now):
         move_gen = move_generator(current_piece, moving_now[:index_piece] + moving_now[index_piece + 1:], moving_next)
+
+        # input('\n\n\n')
+        print(current_piece, '\n')
+        for p in moving_now[:index_piece] + moving_now[index_piece + 1:] + moving_next:
+            print(p)
+        print('')
 
         # Try every move of the selected piece
         while True:
@@ -246,17 +293,27 @@ def can_white_win(moving_now, moving_next, moves, current_move=1):
                         else:
                             return False
 
+                print(current_piece, next_move, 'LegalMove')
+
                 # Save the current state in order to evaluate it next
                 new_now = moving_now[:]
                 new_now[index_piece] = Piece(current_piece.color, current_piece.piece, new_coord)
 
+                # Check if the board is new or just a repeat
+                is_board_new = check_board(whites_first(new_now, new_next, moving_color))
+                if not is_board_new:
+                    return False
+
                 check_next += [[new_next, new_now, moves, current_move + 1]]
 
+            except ValueError:
+                print(current_piece, next_move, 'ValueError')
+                pass
             except StopIteration:
+                print(current_piece, next_move, 'StopIteration')
                 break
             except RuntimeError:
-                pass
-            except ValueError:
+                print(current_piece, next_move, 'RuntimeError')
                 pass
 
     # Check the results of the following moves
@@ -312,11 +369,16 @@ print(simplifiedChessEngine(
     [['N', 'C', '2'], ['R', 'A', '1'], ['Q', 'D', '4']],
     [['R', 'A', '4'], ['R', 'B', '4'], ['N', 'A', '3'], ['N', 'C', '3'], ['Q', 'A', '2']],
     6
-))'''
+))
 print('\n\n')
 print(simplifiedChessEngine(
     [['N', 'C', '4'], ['N', 'D', '4'], ['R', 'A', '4'], ['R', 'B', '2'], ['Q', 'A', '3']],
     [['N', 'D', '3'], ['R', 'A', '2'], ['Q', 'D', '1']],
     5
+))'''
+print('\n\n')
+print(simplifiedChessEngine(
+    [['B', 'C', '4'], ['R', 'A', '4'], ['R', 'A', '3'], ['B', 'D', '3'], ['Q', 'A', '2']],
+    [['Q', 'D', '1']],
+    4
 ))
-
