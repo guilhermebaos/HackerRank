@@ -258,7 +258,7 @@ def can_white_win(moving_now, moving_next, moves, current_move=1):
     global all_boards
     all_boards += [whites_first(moving_now, moving_next, moving_color)]
 
-    print(f'\n\n\n\nCurrent Move: {current_move}\n\n\n\n')
+    print(f'\n\n\n\nCurrent Move: {current_move}')
 
     # For every piece of the color that's moving now, try every possible move that it can make, using BFS and DFS
     results = []
@@ -266,7 +266,7 @@ def can_white_win(moving_now, moving_next, moves, current_move=1):
     for index_piece, current_piece in enumerate(moving_now):
         move_gen = move_generator(current_piece, moving_now[:index_piece] + moving_now[index_piece + 1:], moving_next)
 
-        # input('\n\n\n')
+        print('\n\n\n')
         print(current_piece, '\n')
         for p in moving_now[:index_piece] + moving_now[index_piece + 1:] + moving_next:
             print(p)
@@ -289,11 +289,13 @@ def can_white_win(moving_now, moving_next, moves, current_move=1):
                     new_next.remove(collision)
                     if collision.piece == 'Q':
                         if moving_color == 'White':
+                            print('White wins by getting the Queen!')
                             return True
                         else:
+                            print('Black wins by getting the Queen!')
                             return False
 
-                print(current_piece, next_move, 'LegalMove')
+                print(current_piece, next_move, new_coord, 'LegalMove')
 
                 # Save the current state in order to evaluate it next
                 new_now = moving_now[:]
@@ -301,19 +303,15 @@ def can_white_win(moving_now, moving_next, moves, current_move=1):
 
                 # Check if the board is new or just a repeat
                 is_board_new = check_board(whites_first(new_now, new_next, moving_color))
-                if not is_board_new:
-                    return False
-
-                check_next += [[new_next, new_now, moves, current_move + 1]]
+                if is_board_new:
+                    check_next += [[new_next, new_now, moves, current_move + 1]]
 
             except ValueError:
                 print(current_piece, next_move, 'ValueError')
                 pass
             except StopIteration:
-                print(current_piece, next_move, 'StopIteration')
                 break
             except RuntimeError:
-                print(current_piece, next_move, 'RuntimeError')
                 pass
 
     # Check the results of the following moves
@@ -352,6 +350,7 @@ def simplifiedChessEngine(whites, blacks, moves):
     else:
         return 'NO'
 
+
 '''
 print('\n\n')
 print(simplifiedChessEngine(
@@ -378,7 +377,9 @@ print(simplifiedChessEngine(
 ))'''
 print('\n\n')
 print(simplifiedChessEngine(
-    [['B', 'C', '4'], ['R', 'A', '4'], ['R', 'A', '3'], ['B', 'D', '3'], ['Q', 'A', '2']],
+    [['B', 'D', '4'], ['R', 'B', '2'], ['R', 'A', '3'], ['N', 'D', '3'], ['Q', 'A', '2']],
     [['Q', 'D', '1']],
-    4
+    2
 ))
+# Should return NO
+# https://lichess.org/editor?fen=8%2F8%2F8%2F8%2F3B4%2FR2N4%2FQ7%2F1R1q4+w+-+-+0+1
