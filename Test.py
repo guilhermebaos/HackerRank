@@ -1,0 +1,1 @@
+print(list(bin(0)[2:]).count('0'))

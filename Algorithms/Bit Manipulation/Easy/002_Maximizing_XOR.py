@@ -1,5 +1,6 @@
 # https://www.hackerrank.com/challenges/maximizing-xor/problem
 
+# XOR binary operation
 def xor(a, b):
     a_bin = bin(a)[2:]
     b_bin = bin(b)[2:]
@@ -17,6 +18,7 @@ def xor(a, b):
     return int(result, 2)
 
 
+# Brute force all value pairs, and return the maximum
 def maximizingXor(l, r):
     results = []
     for a in range(l, r + 1):
