@@ -47,6 +47,7 @@ def sumXor(n):
     return total
 '''
 
+
 # Fast Version
 # An XOR is equal to a SUM when the numbers' don't have 1s in the same position
 def sumXor(n):
