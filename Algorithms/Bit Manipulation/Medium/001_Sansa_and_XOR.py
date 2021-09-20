@@ -26,6 +26,9 @@ def sansaXor(arr):
     # The number of times each number appears in the XOR calculation depends only in it's position in the sub array
     appearances = [(index + 1) * (arr_len - index) for index in range(arr_len)]
 
+    # Note: only later I learned that there are bitwise operators in python, such as ^ for XOR
+    # Still, I'll keep this solution for future reference, as I will for all other Bit Manipulation Problems
+
     # Execute XOR when n appears an odd number of times in the final calculation
     result = 0
     for n, app in zip(arr[:], appearances):
